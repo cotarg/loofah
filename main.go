@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
 	"log"
 	"os"
@@ -8,7 +9,8 @@ import (
 
 func main() {
 	// fmt.Println("WE ARE SO COOL!!! 🎉")
-	statsInfo, err := os.Stdin.Stat()
+	workingFile, err := os.Stdin()
+	reader := bufio.NewReader(os.Stdin)
 
 	if err != nil {
 		log.Fatal("OH NOES THIS IS SO BROKEN!!")
