@@ -1,22 +1,38 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
+	"io"
 	"log"
 	"os"
+	"strings"
 )
 
 func main() {
-	// fmt.Println("WE ARE SO COOL!!! 🎉")
-	statsInfo, err := os.Stdin.Stat()
 
-	if err != nil {
-		log.Fatal("OH NOES THIS IS SO BROKEN!!")
+	reader := bufio.NewReader(os.Stdin)
+
+	for {
+		line, err := reader.ReadString('\n')
+
+		// if end of file, just break, else shout
+		if err != nil {
+			if err == io.EOF {
+				break
+			}
+
+			log.Fatal("OH NOES THIS IS SO BROKEN!!")
+
+		}
+
+		// reader.ReadString() retains delimiter, so this strips it for output
+		line = strings.TrimSuffix(line, "\n")
+
+		fmt.Println(line)
 	}
 
-	fmt.Printf("%#v", statsInfo)
-
-	if statsInfo.Mode()&os.ModeNamedPipe == 0 {
+	if os.ModeNamedPipe == 0 {
 		log.Fatal("TOO MANY THINGS OR NOT ENOUGH THINGS BUT THINGS ARE WRONG!")
 	}
 }
