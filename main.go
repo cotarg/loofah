@@ -2,11 +2,13 @@ package main
 
 import (
 	"bufio"
+	"errors"
 	"fmt"
 	"io"
 	"log"
 	"os"
 	"strings"
+	"time"
 )
 
 type Input interface {
@@ -24,18 +26,22 @@ type StdinInput struct {
 }
 
 func (s *StdinInput) Listen() error {
+	// read in stdin
 	statsInfo, err := os.Stdin.Stat()
 	reader := bufio.NewReader(os.Stdin)
 
+	// if there's an err at this point, you failed reading std in
 	if err != nil {
-		log.Fatal("OH NOES THIS IS SO BROKEN!!")
+		return fmt.Errorf("omg something's wrong with reading stdin: %v", err)
 	}
 
+	// if the number of inputs is wrong, boot out
 	if statsInfo.Mode()&os.ModeNamedPipe == 0 {
-		log.Fatal("TOO MANY THINGS OR NOT ENOUGH THINGS BUT THINGS ARE WRONG!")
+		return errors.New("either too much or not enough input womp womp!")
 	}
 
 	for {
+		// read line by line
 		line, err := reader.ReadString('\n')
 
 		// if end of file, just break, else shout
@@ -44,15 +50,36 @@ func (s *StdinInput) Listen() error {
 				break
 			}
 
-			log.Fatal("OH NOES THIS IS SO BROKEN!!")
-
+			// if err != EOF, tell me what's wrong
+			return fmt.Errorf("omg something's wrong with reading stdin: %v", err)
 		}
 
 		// reader.ReadString() retains delimiter, so this strips it for output
 		line = strings.TrimSuffix(line, "\n")
 
+		// fmt.Println(line)
+		for _, output := range s.outputs {
+			output <- line
+		}
+	}
+}
+
+type StdOutput struct {
+	input chan string
+}
+
+func (x *StdOutput) Listen() error {
+	for line := range x.input {
 		fmt.Println(line)
 	}
+
+	// for {}
+	// line := <- x.input
+	// fmt.Println(line)
+}
+
+func (x *StdOutput) Join(input chan string) {
+	x.input = input
 }
 
 func (s *StdinInput) Subscribe() chan string {
@@ -62,5 +89,18 @@ func (s *StdinInput) Subscribe() chan string {
 }
 
 func main() {
+	input := &StdinInput{}
+	go func() {
+		err := input.Listen()
 
+		if err != nil {
+			log.Fatal("SHUT IT DOWN!!!!!")
+		}
+	}()
+
+	output := &StdOutput{}
+	go output.Listen()
+
+	output.Join(input.Subscribe())
+	time.Sleep(time.Second * 10)
 }
