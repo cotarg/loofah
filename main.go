@@ -9,7 +9,21 @@ import (
 	"strings"
 )
 
-func main() {
+type Input interface {
+	Subscribe() chan string
+	Listen() error
+}
+
+type Output interface {
+	Join(chan string)
+	Listen() error
+}
+
+type StdinInput struct {
+	outputs []chan string
+}
+
+func (s *StdinInput) Listen() error {
 	statsInfo, err := os.Stdin.Stat()
 	reader := bufio.NewReader(os.Stdin)
 
@@ -39,4 +53,14 @@ func main() {
 
 		fmt.Println(line)
 	}
+}
+
+func (s *StdinInput) Subscribe() chan string {
+	ch := make(chan string, 13)
+	s.outputs = append(s.outputs, ch)
+	return ch
+}
+
+func main() {
+
 }
