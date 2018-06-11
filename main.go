@@ -62,6 +62,7 @@ func (s *StdinInput) Listen() error {
 			output <- line
 		}
 	}
+	return nil
 }
 
 type StdOutput struct {
@@ -76,6 +77,7 @@ func (x *StdOutput) Listen() error {
 	// for {}
 	// line := <- x.input
 	// fmt.Println(line)
+	return nil
 }
 
 func (x *StdOutput) Join(input chan string) {
