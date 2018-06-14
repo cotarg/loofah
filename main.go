@@ -8,7 +8,6 @@ import (
 	"log"
 	"os"
 	"strings"
-	"time"
 )
 
 type Input interface {
@@ -62,6 +61,12 @@ func (s *StdinInput) Listen() error {
 			output <- line
 		}
 	}
+
+	// close the channel because NO MOAR STUFF
+	for _, output := range s.outputs {
+		close(output)
+	}
+
 	return nil
 }
 
@@ -70,13 +75,23 @@ type StdOutput struct {
 }
 
 func (x *StdOutput) Listen() error {
-	for line := range x.input {
-		fmt.Println(line)
-	}
+	// THESE BOTH DO THE SAME THING, WHICHEVER ONE IS COMMENTED IS NOT THE ONE I'M USING RIGHT NOW
 
-	// for {}
-	// line := <- x.input
-	// fmt.Println(line)
+	// for line := range x.input {
+	// 	fmt.Println(line)
+	// }
+
+listenLoop:
+	for {
+		select {
+		case line, ok := <-x.input:
+			if !ok {
+				break listenLoop
+				// return nil
+			}
+			fmt.Println(line)
+		}
+	}
 	return nil
 }
 
@@ -101,8 +116,7 @@ func main() {
 	}()
 
 	output := &StdOutput{}
-	go output.Listen()
 
 	output.Join(input.Subscribe())
-	time.Sleep(time.Second * 10)
+	output.Listen()
 }
