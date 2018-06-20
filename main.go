@@ -20,6 +20,12 @@ type Output interface {
 	Listen() error
 }
 
+type StringManglerMiddleware interface {
+	Subscribe() chan string
+	Join(chan string)
+	Listen() error
+}
+
 type StdinInput struct {
 	outputs []chan string
 }
