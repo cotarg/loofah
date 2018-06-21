@@ -14,24 +14,26 @@ func (m *StringMaskMiddleware) Join(input chan string) {
 }
 
 func (m *StringMaskMiddleware) Listen() error {
-listenLoop:
+	defer func() {
+		// close the channel because NO MOAR STUFF
+		for _, output := range m.outputs {
+			close(output)
+		}
+	}()
+
 	for {
 		select {
 		case line, ok := <-m.input:
 			if !ok {
-				break listenLoop
+				return nil
 			}
 
 			for _, output := range m.outputs {
-				output <- strings.ToUpper(line)
+				output <- emojifier(line)
 			}
 		}
 	}
 
-	// close the channel because NO MOAR STUFF
-	for _, output := range m.outputs {
-		close(output)
-	}
 	return nil
 }
 
@@ -39,4 +41,16 @@ func (m *StringMaskMiddleware) Subscribe() chan string {
 	ch := make(chan string, 13)
 	m.outputs = append(m.outputs, ch)
 	return ch
+}
+
+// emojifier converts a's into a cat heart eye emoji
+func emojifier(line string) string {
+	find := 'a'
+	replace := '😻'
+	return strings.Map(func(r rune) rune {
+		if r == find {
+			return replace
+		}
+		return r
+	}, line)
 }
