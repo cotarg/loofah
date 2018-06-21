@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"strings"
 )
 
@@ -22,8 +21,16 @@ listenLoop:
 			if !ok {
 				break listenLoop
 			}
-			fmt.Println(strings.ToUpper(line))
+
+			for _, output := range m.outputs {
+				output <- strings.ToUpper(line)
+			}
 		}
+	}
+
+	// close the channel because NO MOAR STUFF
+	for _, output := range m.outputs {
+		close(output)
 	}
 	return nil
 }
