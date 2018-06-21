@@ -18,7 +18,7 @@ func (m *StringMaskMiddleware) Listen() error {
 listenLoop:
 	for {
 		select {
-		case line, ok := <-x.input:
+		case line, ok := <-m.input:
 			if !ok {
 				break listenLoop
 			}
