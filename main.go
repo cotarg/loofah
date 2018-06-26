@@ -24,8 +24,12 @@ func main() {
 		}
 	}()
 
+	middleware := &StringMaskMiddleware{}
+	middleware.Join(input.Subscribe())
+	go middleware.Listen()
+
 	output := &StdOutput{}
 
-	output.Join(input.Subscribe())
+	output.Join(middleware.Subscribe())
 	output.Listen()
 }
