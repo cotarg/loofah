@@ -1,6 +1,9 @@
 package main
 
-import "encoding/json"
+import (
+	"encoding/json"
+	"fmt"
+)
 
 type JSONLogObject struct {
 	date       string            `json:"date"`
@@ -17,6 +20,11 @@ type JSONLogObject struct {
 
 func (j *JSONObject) ingestLogline(loglineString []byte) {
 	var formattedLog JSONLogObject
-	err := json.Unmarshal(loglineString, &formattedLog)
+	err = json.Unmarshal(loglineString, &formattedLog)
+
+	if err != nil {
+		return fmt.Errorf("problem with decoding from JSON: %v", err)
+	}
+
 	return formattedLog
 }
