@@ -5,20 +5,64 @@ import (
 	"fmt"
 )
 
-type JSONLogObject struct {
-	date       string            `json:"date"`
-	date_day   string            `json:"date_day"`
-	date_month string            `json:"date_month"`
-	date_time  string            `json:"date_time"`
-	hostname   string            `json:"hostname"`
-	message    string            `json:"message"`
-	pid        string            `json:"pid"`
-	rig        map[string]string `json:"rig"`
-	syslog     map[string]string `json:"syslog"`
-	version    string            `json:"version"`
+type JSONParserMiddleware struct {
+	input   chan string
+	outputs []chan string
 }
 
-func (j *JSONObject) ingestLogline(loglineString []byte) {
+type JSONLogObject struct {
+	date       string
+	date_day   string
+	date_month string
+	date_time  string
+	hostname   string
+	message    string
+	pid        string
+	rig        map[string]string
+	syslog     map[string]string
+	version    string
+}
+
+func (m *JSONParserMiddleware) Join(input chan string) {
+	m.input = input
+}
+
+func (m *StringMaskMiddleware) Subscribe() chan string {
+	ch := make(chan string, 13)
+	m.outputs = append(m.outputs, ch)
+	return ch
+}
+
+func (m *JSONParserMiddleware) Listen() error {
+	defer func() {
+		// close the channel because NO MOAR STUFF
+		for _, output := range m.outputs {
+			close(output)
+		}
+	}()
+
+	for {
+		select {
+		case line, ok := <-m.input:
+			if !ok {
+				return nil
+			}
+
+			for _, output := range m.outputs {
+				line = []byte(line)
+				output <- logScrub(line)
+			}
+		}
+	}
+
+	return nil
+}
+
+func logScrub(formattedLog JSONLogObject) {
+
+}
+
+func ingestLogline(loglineString []byte) JSONLogObject {
 	var formattedLog JSONLogObject
 	err = json.Unmarshal(loglineString, &formattedLog)
 
