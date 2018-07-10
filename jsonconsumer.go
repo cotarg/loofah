@@ -3,32 +3,33 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 )
 
 type JSONParserMiddleware struct {
 	input   chan string
-	outputs []chan string
+	outputs []chan JSONLogObject
 }
 
 type JSONLogObject struct {
-	date       string
-	date_day   string
-	date_month string
-	date_time  string
-	hostname   string
-	message    string
-	pid        string
-	rig        map[string]string
-	syslog     map[string]string
-	version    string
+	Date      string            `json:"date"`
+	DateDay   string            `json:"date_day"`
+	DateMonth string            `json:"date_month"`
+	DateTime  string            `json:"date_time"`
+	Hostname  string            `json:"hostname"`
+	Message   string            `json:"message"`
+	PID       string            `json:"pid"`
+	Rig       map[string]string `json:"rig"`
+	Syslog    map[string]string `json:"syslog"`
+	Version   string            `json:"version"`
 }
 
 func (m *JSONParserMiddleware) Join(input chan string) {
 	m.input = input
 }
 
-func (m *StringMaskMiddleware) Subscribe() chan string {
-	ch := make(chan string, 13)
+func (m *JSONParserMiddleware) Subscribe() chan JSONLogObject {
+	ch := make(chan JSONLogObject, 13)
 	m.outputs = append(m.outputs, ch)
 	return ch
 }
@@ -48,9 +49,15 @@ func (m *JSONParserMiddleware) Listen() error {
 				return nil
 			}
 
+			modifiedLine, err := ingestLogline(line)
+
+			if err != nil {
+				log.Println("OH NOES! THIS NEEDS A BETTER MESSAGE! %v", err)
+				continue
+			}
+
 			for _, output := range m.outputs {
-				line = []byte(line)
-				output <- logScrub(line)
+				output <- modifiedLine
 			}
 		}
 	}
@@ -58,17 +65,13 @@ func (m *JSONParserMiddleware) Listen() error {
 	return nil
 }
 
-func logScrub(formattedLog JSONLogObject) {
-
-}
-
-func ingestLogline(loglineString []byte) JSONLogObject {
-	var formattedLog JSONLogObject
-	err = json.Unmarshal(loglineString, &formattedLog)
+func ingestLogline(loglineString []byte) (JSONLogObject, error) {
+	formattedLog := JSONLogObject{}
+	err := json.Unmarshal(loglineString, &formattedLog)
 
 	if err != nil {
-		return fmt.Errorf("problem with decoding from JSON: %v", err)
+		return formattedLog, fmt.Errorf("problem with decoding from JSON: %v", err)
 	}
 
-	return formattedLog
+	return formattedLog, nil
 }
