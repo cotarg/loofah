@@ -14,12 +14,20 @@ func main() {
 		}
 	}()
 
-	middleware := &StringMaskMiddleware{}
-	middleware.Join(input.Subscribe())
-	go middleware.Listen()
+	jsonParserMiddleware := &JSONParserMiddleware{}
+	jsonParserMiddleware.Join(input.Subscribe())
+	go jsonParserMiddleware.Listen()
+
+	jsonMaskMiddleware := &JSONMaskMiddleware{}
+	jsonMaskMiddleware.Join(jsonParserMiddleware.Subscribe())
+	go jsonMaskMiddleware.Listen()
+
+	jsonStringifierMiddleware := &JSONStringifierMiddleware{}
+	jsonStringifierMiddleware.Join(jsonMaskMiddleware.Subscribe())
+	go jsonStringifierMiddleware.Listen()
 
 	output := &StdOutput{}
 
-	output.Join(middleware.Subscribe())
+	output.Join(jsonStringifierMiddleware.Subscribe())
 	output.Listen()
 }

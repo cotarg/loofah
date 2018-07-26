@@ -39,3 +39,15 @@ func (m *JSONMaskMiddleware) Subscribe() chan JSONLogObject {
 	m.outputs = append(m.outputs, ch)
 	return ch
 }
+
+// emojifier converts a's into a cat heart eye emoji
+func emojifier(line string) string {
+	find := 'a'
+	replace := '😻 '
+	return strings.Map(func(r rune) rune {
+		if r == find {
+			return replace
+		}
+		return r
+	}, line)
+}

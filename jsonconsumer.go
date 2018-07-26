@@ -53,7 +53,7 @@ func (m *JSONParserMiddleware) Listen() error {
 			modifiedLine, err := ingestLogline([]byte(line))
 
 			if err != nil {
-				log.Println("OH NOES! THIS NEEDS A BETTER MESSAGE! %v", err)
+				log.Printf("OH NOES! THIS NEEDS A BETTER MESSAGE! %v \n", err)
 				continue
 			}
 
