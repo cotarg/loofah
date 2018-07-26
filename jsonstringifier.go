@@ -39,7 +39,7 @@ func (m *JSONStringifierMiddleware) Listen() error {
 			stringifiedJSON, err := ingestJSONObj(jsonObj)
 
 			if err != nil {
-				log.Println("OH NOES! THIS NEEDS A BETTER MESSAGE! %v", err)
+				log.Printf("OH NOES! THIS NEEDS A BETTER MESSAGE! %v \n", err)
 				continue
 			}
 
