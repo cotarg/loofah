@@ -1,9 +1,5 @@
 package main
 
-import (
-	"strings"
-)
-
 type JSONMaskMiddleware struct {
 	input   chan JSONLogObject
 	outputs []chan JSONLogObject
@@ -42,16 +38,4 @@ func (m *JSONMaskMiddleware) Subscribe() chan JSONLogObject {
 	ch := make(chan JSONLogObject, 13)
 	m.outputs = append(m.outputs, ch)
 	return ch
-}
-
-// emojifier converts a's into a cat heart eye emoji
-func emojifier(line string) string {
-	find := 'a'
-	replace := '😻'
-	return strings.Map(func(r rune) rune {
-		if r == find {
-			return replace
-		}
-		return r
-	}, line)
 }

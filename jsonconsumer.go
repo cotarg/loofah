@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"time"
 )
 
 type JSONParserMiddleware struct {
@@ -12,7 +13,7 @@ type JSONParserMiddleware struct {
 }
 
 type JSONLogObject struct {
-	Date      string            `json:"date"`
+	Date      time.Time         `json:"date"`
 	DateDay   string            `json:"date_day"`
 	DateMonth string            `json:"date_month"`
 	DateTime  string            `json:"date_time"`
@@ -49,7 +50,7 @@ func (m *JSONParserMiddleware) Listen() error {
 				return nil
 			}
 
-			modifiedLine, err := ingestLogline(line)
+			modifiedLine, err := ingestLogline([]byte(line))
 
 			if err != nil {
 				log.Println("OH NOES! THIS NEEDS A BETTER MESSAGE! %v", err)
