@@ -1,8 +1,6 @@
 package main
 
-import (
-	"strings"
-)
+import "strings"
 
 type JSONMaskMiddleware struct {
 	input   chan JSONLogObject
